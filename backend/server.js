@@ -63,7 +63,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Login route - Still only uses email + password
+// Login route - Now returns name on success
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -84,9 +84,13 @@ app.post('/login', async (req, res) => {
     }
 
     console.log('✅ Login successful for:', user.name, '<', email, '>');
+
+    // ← RETURN name along with success
     res.json({ 
       success: true, 
-      message: 'Login successful' 
+      message: 'Login successful',
+      name: user.name,           // ← This is new
+      email: user.email          // Optional: also return email if needed
     });
   } catch (err) {
     console.error('❌ Login error:', err);

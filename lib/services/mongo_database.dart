@@ -3,27 +3,31 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class MongoDatabase {
-  // Smart base URL selection
+  // Smart base URL based on platform
   static String get baseUrl {
-    // Android emulator → use special alias for host machine
     if (Platform.isAndroid) {
+      // Android emulator: use special alias to reach host PC
       return 'http://10.0.2.2:3000';
     }
 
-    // Desktop platforms (Windows, macOS, Linux) → localhost
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+      // Desktop: localhost
       return 'http://localhost:3000';
     }
 
-    // Fallback (e.g., web or future platforms)
+    // Fallback (web or other platforms)
     return 'http://localhost:3000';
   }
 
-  /// Signup: Now includes 'name' field
+  /// Signup: Sends name, email, password to backend
   static Future<Map<String, dynamic>> insertUser(
-      String name, String email, String password) async {
+    String name,
+    String email,
+    String password,
+  ) async {
     try {
-      print('🌍 Connecting to: $baseUrl/signup'); // Debug log
+      print('🌍 Sending signup request to: $baseUrl/signup');
+
       final response = await http.post(
         Uri.parse('$baseUrl/signup'),
         headers: {'Content-Type': 'application/json'},
@@ -32,24 +36,28 @@ class MongoDatabase {
           'email': email.trim(),
           'password': password,
         }),
-      ).timeout(const Duration(seconds: 15)); // Prevent hanging
+      ).timeout(const Duration(seconds: 20));
 
       final Map<String, dynamic> data = jsonDecode(response.body);
       print('✅ Signup response: $data');
       return data;
     } catch (e) {
-      print('❌ Signup error: $e');
+      print('❌ Signup failed: $e');
       return {
         'success': false,
-        'message': 'Cannot reach server. Check backend and network.',
+        'message': 'Cannot connect to server. Please check your network and backend.',
       };
     }
   }
 
-  /// Login: Still only email + password (name not needed for login)
-  static Future<Map<String, dynamic>> findUser(String email, String password) async {
+  /// Login: Returns full response including 'name' from backend
+  static Future<Map<String, dynamic>> findUser(
+    String email,
+    String password,
+  ) async {
     try {
-      print('🌍 Connecting to: $baseUrl/login'); // Debug log
+      print('🌍 Sending login request to: $baseUrl/login');
+
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
@@ -57,16 +65,23 @@ class MongoDatabase {
           'email': email.trim(),
           'password': password,
         }),
-      ).timeout(const Duration(seconds: 15));
+      ).timeout(const Duration(seconds: 20));
 
       final Map<String, dynamic> data = jsonDecode(response.body);
       print('✅ Login response: $data');
+
+      // Ensure 'name' is always present (fallback to 'User' if missing)
+      if (data['success'] == true && data['name'] == null) {
+        data['name'] = 'User';
+      }
+
       return data;
     } catch (e) {
-      print('❌ Login error: $e');
+      print('❌ Login failed: $e');
       return {
         'success': false,
-        'message': 'Cannot reach server. Check backend and network.',
+        'message': 'Cannot connect to server. Please check your network and backend.',
+        'name': 'User', // fallback
       };
     }
   }
