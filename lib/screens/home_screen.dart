@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'assess_risk_screen.dart';  // ← Import the new assessment screen
 
 class HomeScreen extends StatelessWidget {
-  final String userName;  // ← Now received from login
+  final String userName;
 
   const HomeScreen({super.key, required this.userName});
 
-  // Temporary placeholder data (replace later with real)
+  // Temporary placeholder data (replace with real data from backend later)
   final String riskLevel = "Low Risk";
   final Color riskColor = Colors.green;
   final String riskMessage = "Excellent! Keep up the healthy habits.";
@@ -23,7 +24,11 @@ class HomeScreen extends StatelessWidget {
         elevation: 0,
         title: const Text(
           'DiaPredict',
-          style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 24),
+          style: TextStyle(
+            color: Colors.blue,
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
         ),
         centerTitle: true,
       ),
@@ -32,7 +37,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Real user name from backend!
+            // Personalized greeting with real name
             Text(
               'Hello $userName!',
               style: const TextStyle(
@@ -43,7 +48,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // Rest of your beautiful design (same as before)
+            // Diabetes Risk Card
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -57,9 +62,19 @@ class HomeScreen extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Your Diabetes Risk', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const Text(
+                            'Your Diabetes Risk',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                           const SizedBox(height: 8),
-                          Text(riskLevel, style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: riskColor)),
+                          Text(
+                            riskLevel,
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: riskColor,
+                            ),
+                          ),
                           Text(riskMessage, style: const TextStyle(color: Colors.grey)),
                         ],
                       ),
@@ -71,7 +86,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // BMI & Calories row (same)
+            // BMI & Calorie Intake Row
             Row(
               children: [
                 Expanded(
@@ -85,7 +100,10 @@ class HomeScreen extends StatelessWidget {
                           const Icon(Icons.scale, size: 40, color: Colors.blue),
                           const SizedBox(height: 10),
                           const Text('BMI', style: TextStyle(fontSize: 16)),
-                          Text(bmi.toStringAsFixed(1), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                          Text(
+                            bmi.toStringAsFixed(1),
+                            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                     ),
@@ -103,7 +121,10 @@ class HomeScreen extends StatelessWidget {
                           const Icon(Icons.local_fire_department, size: 40, color: Colors.orange),
                           const SizedBox(height: 10),
                           const Text('Calorie Intake', style: TextStyle(fontSize: 16)),
-                          Text('$dailyCalories kcal', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                          Text(
+                            '$dailyCalories kcal',
+                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                          ),
                         ],
                       ),
                     ),
@@ -113,14 +134,26 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 30),
 
-            // Buttons (same as before)
+            // Action Buttons
             SizedBox(
               width: double.infinity,
               height: 60,
               child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                child: const Text('Assess Risk Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                onPressed: () {
+                  // Navigate to Assess Risk Screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const AssessRiskScreen()),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text(
+                  'Assess Risk Now',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -128,9 +161,17 @@ class HomeScreen extends StatelessWidget {
               width: double.infinity,
               height: 60,
               child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.blue, width: 2), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                child: const Text("Plan Today's Meals", style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold)),
+                onPressed: () {
+                  // Navigate to Meal Planner (later)
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.blue, width: 2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text(
+                  "Plan Today's Meals",
+                  style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(height: 16),
@@ -138,15 +179,26 @@ class HomeScreen extends StatelessWidget {
               width: double.infinity,
               height: 60,
               child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(side: const BorderSide(color: Colors.blue, width: 2), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                child: const Text('View Progress', style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold)),
+                onPressed: () {
+                  // Navigate to Progress (later)
+                },
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.blue, width: 2),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: const Text(
+                  'View Progress',
+                  style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
+                ),
               ),
             ),
             const SizedBox(height: 30),
 
-            // Calorie ring chart (same)
-            const Text('Daily Calorie Intake', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            // Daily Calorie Intake Ring Chart
+            const Text(
+              'Daily Calorie Intake',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 10),
             Text("Today's Progress: $dailyCalories kcal"),
             const SizedBox(height: 20),
@@ -157,8 +209,18 @@ class HomeScreen extends StatelessWidget {
                   sectionsSpace: 0,
                   centerSpaceRadius: 40,
                   sections: [
-                    PieChartSectionData(color: Colors.orange, value: dailyCalories.toDouble(), title: '', radius: 50),
-                    PieChartSectionData(color: Colors.grey[300], value: (calorieGoal - dailyCalories).toDouble(), title: '', radius: 50),
+                    PieChartSectionData(
+                      color: Colors.orange,
+                      value: dailyCalories.toDouble(),
+                      title: '',
+                      radius: 50,
+                    ),
+                    PieChartSectionData(
+                      color: Colors.grey[300],
+                      value: (calorieGoal - dailyCalories).toDouble(),
+                      title: '',
+                      radius: 50,
+                    ),
                   ],
                 ),
               ),
@@ -167,11 +229,23 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
       ),
+
+      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        currentIndex: 0,
+        currentIndex: 0, // Home is selected
+        onTap: (index) {
+          if (index == 1) {
+            // Assess tab tapped
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const AssessRiskScreen()),
+            );
+          }
+          // Add other tabs later
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.assessment), label: 'Assess'),
