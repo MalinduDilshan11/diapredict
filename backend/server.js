@@ -6,15 +6,16 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Connect to MongoDB Atlas
 mongoose.connect(
-  'mongodb+srv://malindu:123@cluster0.9sulaf9.mongodb.net/diapredict'
+  'mongodb+srv://malindu:123@cluster0.9sulaf9.mongodb.net/diapredict?retryWrites=true&w=majority'
 )
-.then(() => console.log('✅ MongoDB connected'))
-.catch((err) => console.error('MongoDB connection error:', err));
+.then(() => console.log('✅ MongoDB connected successfully'))
+.catch((err) => console.error('❌ MongoDB connection error:', err));
 
-
-// User Schema
+// User Schema - Now includes 'name'
 const userSchema = new mongoose.Schema({
+  name: { type: String, required: true },                    // ← NEW: Full name
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
@@ -22,47 +23,96 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Signup route
+// Signup route - Now accepts and saves 'name'
 app.post('/signup', async (req, res) => {
-  const { email, password } = req.body;
+  const { name, email, password } = req.body;
 
-  if (!email || !password) return res.json({ success: false, message: 'Email and password required' });
+  // Validate all required fields
+  if (!name || !email || !password) {
+    return res.json({ 
+      success: false, 
+      message: 'Name, email and password are required' 
+    });
+  }
 
   try {
+    // Check if email already exists
     const exists = await User.findOne({ email });
-    if (exists) return res.json({ success: false, message: 'User already exists' });
+    if (exists) {
+      return res.json({ 
+        success: false, 
+        message: 'User with this email already exists' 
+      });
+    }
 
-    const newUser = new User({ email, password });
+    // Create and save new user
+    const newUser = new User({ name, email, password });
     await newUser.save();
 
-    console.log('🟢 User saved:', email);
-    res.json({ success: true, message: 'Signup successful' });
+    console.log('🟢 New user registered:', name, '<', email, '>');
+    res.json({ 
+      success: true, 
+      message: 'Signup successful' 
+    });
   } catch (err) {
-    console.error('Signup error:', err);
-    res.json({ success: false, message: 'Signup failed' });
+    console.error('❌ Signup error:', err);
+    res.json({ 
+      success: false, 
+      message: 'Signup failed. Please try again.' 
+    });
   }
 });
 
-// Login route
+// Login route - Still only uses email + password
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password) return res.json({ success: false, message: 'Email and password required' });
+  if (!email || !password) {
+    return res.json({ 
+      success: false, 
+      message: 'Email and password required' 
+    });
+  }
 
   try {
     const user = await User.findOne({ email, password });
-    if (!user) return res.json({ success: false, message: 'Invalid email or password' });
+    if (!user) {
+      return res.json({ 
+        success: false, 
+        message: 'Invalid email or password' 
+      });
+    }
 
-    console.log('✅ Login success for', email);
-    res.json({ success: true, message: 'Login successful' });
+    console.log('✅ Login successful for:', user.name, '<', email, '>');
+    res.json({ 
+      success: true, 
+      message: 'Login successful' 
+    });
   } catch (err) {
-    console.error('Login error:', err);
-    res.json({ success: false, message: 'Login failed' });
+    console.error('❌ Login error:', err);
+    res.json({ 
+      success: false, 
+      message: 'Login failed' 
+    });
   }
 });
 
+// Optional: Root route for testing
+app.get('/', (req, res) => {
+  res.send('DiaPredict Backend is running! 🚀');
+});
 
-app.listen(3000, '0.0.0.0', () => console.log(' Server running on port 3000'));
+// Start server - bind to all interfaces
+app.listen(3000, '0.0.0.0', () => {
+  console.log('🚀 Server running on http://localhost:3000');
+});
 
-User.find().then(users => console.log('All users in DB:', users));
-
+// Optional: Log all users on startup (for debugging - remove later if needed)
+User.find({})
+  .then(users => {
+    if (users.length > 0) {
+      console.log('📋 Current users in database:');
+      users.forEach(u => console.log(`   - ${u.name} (${u.email})`));
+    }
+  })
+  .catch(err => console.error('Error reading users:', err));

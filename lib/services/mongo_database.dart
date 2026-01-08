@@ -3,58 +3,70 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class MongoDatabase {
-
+  // Smart base URL selection
   static String get baseUrl {
-    // Android emulator
+    // Android emulator → use special alias for host machine
     if (Platform.isAndroid) {
       return 'http://10.0.2.2:3000';
     }
 
-    // Windows 
+    // Desktop platforms (Windows, macOS, Linux) → localhost
     if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
       return 'http://localhost:3000';
     }
 
-    // Web or wena mokakhari
+    // Fallback (e.g., web or future platforms)
     return 'http://localhost:3000';
   }
 
-  static Future<Map<String, dynamic>> insertUser(String email, String password) async {
+  /// Signup: Now includes 'name' field
+  static Future<Map<String, dynamic>> insertUser(
+      String name, String email, String password) async {
     try {
+      print('🌍 Connecting to: $baseUrl/signup'); // Debug log
       final response = await http.post(
         Uri.parse('$baseUrl/signup'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': email,
+          'name': name.trim(),
+          'email': email.trim(),
           'password': password,
         }),
-      );
+      ).timeout(const Duration(seconds: 15)); // Prevent hanging
 
-      return jsonDecode(response.body);
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      print('✅ Signup response: $data');
+      return data;
     } catch (e) {
+      print('❌ Signup error: $e');
       return {
         'success': false,
-        'message': 'Error connecting to backend: $e',
+        'message': 'Cannot reach server. Check backend and network.',
       };
     }
   }
 
+  /// Login: Still only email + password (name not needed for login)
   static Future<Map<String, dynamic>> findUser(String email, String password) async {
     try {
+      print('🌍 Connecting to: $baseUrl/login'); // Debug log
       final response = await http.post(
         Uri.parse('$baseUrl/login'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          'email': email,
+          'email': email.trim(),
           'password': password,
         }),
-      );
+      ).timeout(const Duration(seconds: 15));
 
-      return jsonDecode(response.body);
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      print('✅ Login response: $data');
+      return data;
     } catch (e) {
+      print('❌ Login error: $e');
       return {
         'success': false,
-        'message': 'Error connecting to backend: $e',
+        'message': 'Cannot reach server. Check backend and network.',
       };
     }
   }

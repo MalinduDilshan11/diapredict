@@ -12,16 +12,18 @@ class SignupScreen extends StatefulWidget {
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
   void _signup() async {
+    final name = _nameController.text.trim();
     final email = _emailController.text.trim();
     final password = _passwordController.text;
     final confirmPassword = _confirmPasswordController.text;
 
-    if (email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (name.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please fill all fields')),
       );
@@ -35,7 +37,8 @@ class _SignupScreenState extends State<SignupScreen> {
       return;
     }
 
-    final result = await MongoDatabase.insertUser(email, password);
+    // Send name too!
+    final result = await MongoDatabase.insertUser(name, email, password);
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(result['message'] ?? 'Error')),
@@ -64,6 +67,11 @@ class _SignupScreenState extends State<SignupScreen> {
                 const SizedBox(height: 8),
                 const Text('Predict • Prevent • Personalize.', style: TextStyle(fontSize: 16)),
                 const SizedBox(height: 40),
+
+                // NEW: Name field
+                CustomTextField(label: 'Full Name', controller: _nameController, icon: Icons.person_outline),
+
+                const SizedBox(height: 20),
                 CustomTextField(label: 'Email', controller: _emailController, icon: Icons.email_outlined),
                 const SizedBox(height: 20),
                 CustomTextField(label: 'Password', controller: _passwordController, isPassword: true, icon: Icons.lock_outline),
