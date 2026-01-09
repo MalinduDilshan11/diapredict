@@ -14,18 +14,19 @@ dependencies:
   mongo_dart: ^0.10.1
   crypto: ^3.0.5 # For pie charts later (calorie visualization)
   http: ^1.6.0
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-  flutter_launcher_icons: ^0.14.4  # For app icons
+  flutter_launcher_icons: ^0.14.4
 
 # App icon configuration - this is at the ROOT level (same indentation as 'dependencies:')
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/icon.png"
+  image_path: "assets/images/playstore.png"
   min_sdk_android: 21
 
 flutter:
