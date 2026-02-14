@@ -55,7 +55,7 @@ app.post('/signup', async (req, res) => {
       message: 'Signup successful' 
     });
   } catch (err) {
-    console.error('❌ Signup error:', err);
+    console.error(' Signup error:', err);
     res.json({ 
       success: false, 
       message: 'Signup failed. Please try again.' 
@@ -63,7 +63,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Login route - Now returns name on success
+
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
@@ -83,14 +83,14 @@ app.post('/login', async (req, res) => {
       });
     }
 
-    console.log('✅ Login successful for:', user.name, '<', email, '>');
+    console.log(' Login successful for:', user.name, '<', email, '>');
 
-    // ← RETURN name along with success
+
     res.json({ 
       success: true, 
       message: 'Login successful',
-      name: user.name,           // ← This is new
-      email: user.email          // Optional: also return email if needed
+      name: user.name,           
+      email: user.email          
     });
   } catch (err) {
     console.error('❌ Login error:', err);
@@ -101,9 +101,8 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Optional: Root route for testing
 app.get('/', (req, res) => {
-  res.send('DiaPredict Backend is running! 🚀');
+  res.send('DiaPredict Backend is running! ');
 });
 
 // Start server - bind to all interfaces
@@ -111,7 +110,6 @@ app.listen(3000, '0.0.0.0', () => {
   console.log('🚀 Server running on http://localhost:3000');
 });
 
-// Optional: Log all users on startup (for debugging - remove later if needed)
 User.find({})
   .then(users => {
     if (users.length > 0) {
@@ -120,3 +118,95 @@ User.find({})
     }
   })
   .catch(err => console.error('Error reading users:', err));
+
+
+
+
+  const riskSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  Age: { type: String, required: true },
+  Sex: String,
+  Height: Number,
+  Weight: Number,
+  BMI: Number,
+  HighBP: { type: String, enum: ['Yes', 'No'] },
+  HighChol: { type: String, enum: ['Yes', 'No'] },
+  GenHlth: String,
+  PhysActivity: { type: String, enum: ['Yes', 'No'] },
+  Fruits: { type: String, enum: ['Yes', 'No'] },
+  Veggies: { type: String, enum: ['Yes', 'No'] },
+  DiffWalk: { type: String, enum: ['Yes', 'No'] },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Risk = mongoose.model('Risk', riskSchema);
+
+app.post('/risk', async (req, res) => {
+  try {
+    const newRisk = new Risk(req.body);
+    await newRisk.save();
+
+    console.log('Risk saved for email:', req.body.email);
+
+    res.json({ success: true, message: 'Risk assessment saved successfully' });
+  } catch (err) {
+    console.error('Error saving risk:', err);
+    res.json({ success: false, message: 'Failed to save risk assessment' });
+  }
+});
+
+
+const predictionSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  predictedRisk: { type: String, required: true },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+const Prediction = mongoose.model('Prediction', predictionSchema);
+
+
+
+app.post('/prediction', async (req, res) => {
+  const { email, predictedRisk } = req.body;
+
+  if (!email || !predictedRisk) {
+    return res.json({ success: false, message: 'Email and predictedRisk are required' });
+  }
+
+  try {
+    const updatedPrediction = await Prediction.findOneAndUpdate(
+      { email },                    
+      { predictedRisk, updatedAt: new Date() }, 
+      { upsert: true, new: true }   
+    );
+
+    console.log(`Prediction saved for ${email}: ${predictedRisk}`);
+    res.json({ success: true, message: 'Prediction saved successfully', prediction: updatedPrediction });
+  } catch (err) {
+    console.error('Error saving prediction:', err);
+    res.json({ success: false, message: 'Failed to save prediction' });
+  }
+});
+
+
+app.get('/prediction/:email', async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const prediction = await Prediction.findOne({ email }).sort({ updatedAt: -1 });
+
+    if (!prediction) {
+      return res.json({ success: false, message: 'No prediction found' });
+    }
+
+    res.json({
+      success: true,
+      predictedRisk: prediction.predictedRisk,
+      updatedAt: prediction.updatedAt
+    });
+
+  } catch (err) {
+    console.error('Error fetching prediction:', err);
+    res.json({ success: false, message: 'Failed to fetch prediction' });
+  }
+});
