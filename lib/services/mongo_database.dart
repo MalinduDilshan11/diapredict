@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 
 class MongoDatabase {
@@ -85,4 +85,56 @@ class MongoDatabase {
       };
     }
   }
+
+
+ static Future<Map<String, dynamic>> saveRiskAssessment({
+  required String email,
+  required String ageGroup,
+  required String gender,
+  required double height,
+  required double weight,
+  required double bmi,
+  required bool highBP,
+  required bool highChol,
+  required String generalHealth,
+  required bool physActivity,
+  required bool fruits,
+  required bool veggies,
+  required bool diffWalk,
+}) async {
+  try {
+
+    String yesNo(bool val) => val ? 'Yes' : 'No';
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/risk'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        "email": email, 
+        "Age": ageGroup,
+        "Sex": gender,
+        "Height": height,
+        "Weight": weight,
+        "BMI": bmi,
+        "HighBP": yesNo(highBP),
+        "HighChol": yesNo(highChol),
+        "GenHlth": generalHealth,
+        "PhysActivity": yesNo(physActivity),
+        "Fruits": yesNo(fruits),
+        "Veggies": yesNo(veggies),
+        "DiffWalk": yesNo(diffWalk),
+      }),
+    ).timeout(const Duration(seconds: 20));
+
+    
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    print(' Risk save response: $data');
+    return data;
+  } catch (e) {
+    print(' Risk save failed: $e');
+    return {"success": false, "message": "Failed to save risk assessment."};
+  }
+}
+
+
 }
