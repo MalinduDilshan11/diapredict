@@ -34,18 +34,19 @@ class _LoginScreenState extends State<LoginScreen> {
     );
 
     if (result['success'] == true) {
-      // Extract the name from backend response (fallback to 'User' if missing)
+      // Extract the name from backend response 
       final String userName = result['name'] ?? 'User';
+      final String email = result['email']; 
 
       // Navigate to HomeScreen and pass the real name
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => HomeScreen(userName: userName),
+          builder: (_) => HomeScreen(userName: userName ),
         ),
       );
     }
-    // If login fails → stay on login screen (no navigation)
+    
   }
 
   @override
