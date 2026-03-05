@@ -1,140 +1,140 @@
 import 'dart:convert';
-import 'dart:io' show Platform;
 import 'package:http/http.dart' as http;
 
 class MongoDatabase {
-  // Smart base URL based on platform
-  static String get baseUrl {
-    if (Platform.isAndroid) {
-      // Android emulator: use special alias to reach host PC
-      return 'http://10.0.2.2:3000';
-    }
 
-    if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-      // Desktop: localhost
-      return 'http://localhost:3000';
-    }
+  // IMPORTANT: Use  PC IP address
+  static const String baseUrl = "http://192.168.8.124:3000";
 
-    // Fallback (web or other platforms)
-    return 'http://localhost:3000';
-  }
-
-  /// Signup: Sends name, email, password to backend
+  /// ---------------- SIGNUP ----------------
   static Future<Map<String, dynamic>> insertUser(
-    String name,
-    String email,
-    String password,
-  ) async {
+      String name,
+      String email,
+      String password,
+      ) async {
     try {
-      print('🌍 Sending signup request to: $baseUrl/signup');
+
+      print("Sending signup request to $baseUrl/signup");
 
       final response = await http.post(
-        Uri.parse('$baseUrl/signup'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse("$baseUrl/signup"),
+        headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          'name': name.trim(),
-          'email': email.trim(),
-          'password': password,
+          "name": name.trim(),
+          "email": email.trim(),
+          "password": password
         }),
-      ).timeout(const Duration(seconds: 20));
+      );
 
-      final Map<String, dynamic> data = jsonDecode(response.body);
-      print('✅ Signup response: $data');
+      final data = jsonDecode(response.body);
+
+      print("Signup response: $data");
+
       return data;
+
     } catch (e) {
-      print('❌ Signup failed: $e');
+
+      print("Signup error: $e");
+
       return {
-        'success': false,
-        'message': 'Cannot connect to server. Please check your network and backend.',
+        "success": false,
+        "message": "Cannot connect to server. Please check your network and backend."
       };
     }
   }
 
-  /// Login: Returns full response including 'name' from backend
+  /// ---------------- LOGIN ----------------
   static Future<Map<String, dynamic>> findUser(
-    String email,
-    String password,
-  ) async {
+      String email,
+      String password,
+      ) async {
+
     try {
-      print('🌍 Sending login request to: $baseUrl/login');
+
+      print("Sending login request to $baseUrl/login");
 
       final response = await http.post(
-        Uri.parse('$baseUrl/login'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse("$baseUrl/login"),
+        headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          'email': email.trim(),
-          'password': password,
+          "email": email.trim(),
+          "password": password
         }),
-      ).timeout(const Duration(seconds: 20));
+      );
 
-      final Map<String, dynamic> data = jsonDecode(response.body);
-      print('✅ Login response: $data');
+      final data = jsonDecode(response.body);
 
-      // Ensure 'name' is always present (fallback to 'User' if missing)
-      if (data['success'] == true && data['name'] == null) {
-        data['name'] = 'User';
-      }
+      print("Login response: $data");
 
       return data;
+
     } catch (e) {
-      print('❌ Login failed: $e');
+
+      print("Login error: $e");
+
       return {
-        'success': false,
-        'message': 'Cannot connect to server. Please check your network and backend.',
-        'name': 'User', // fallback
+        "success": false,
+        "message": "Cannot connect to server. Please check your network and backend."
       };
     }
   }
 
+  /// ---------------- SAVE RISK ----------------
+  static Future<Map<String, dynamic>> saveRiskAssessment({
+    required String email,
+    required String ageGroup,
+    required String gender,
+    required double height,
+    required double weight,
+    required double bmi,
+    required bool highBP,
+    required bool highChol,
+    required String generalHealth,
+    required bool physActivity,
+    required bool fruits,
+    required bool veggies,
+    required bool diffWalk,
+  }) async {
 
- static Future<Map<String, dynamic>> saveRiskAssessment({
-  required String email,
-  required String ageGroup,
-  required String gender,
-  required double height,
-  required double weight,
-  required double bmi,
-  required bool highBP,
-  required bool highChol,
-  required String generalHealth,
-  required bool physActivity,
-  required bool fruits,
-  required bool veggies,
-  required bool diffWalk,
-}) async {
-  try {
+    try {
 
-    String yesNo(bool val) => val ? 'Yes' : 'No';
+      String yesNo(bool val) => val ? "Yes" : "No";
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/risk'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        "email": email, 
-        "Age": ageGroup,
-        "Sex": gender,
-        "Height": height,
-        "Weight": weight,
-        "BMI": bmi,
-        "HighBP": yesNo(highBP),
-        "HighChol": yesNo(highChol),
-        "GenHlth": generalHealth,
-        "PhysActivity": yesNo(physActivity),
-        "Fruits": yesNo(fruits),
-        "Veggies": yesNo(veggies),
-        "DiffWalk": yesNo(diffWalk),
-      }),
-    ).timeout(const Duration(seconds: 20));
+      final response = await http.post(
+        Uri.parse("$baseUrl/risk"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": email,
+          "Age": ageGroup,
+          "Sex": gender,
+          "Height": height,
+          "Weight": weight,
+          "BMI": bmi,
+          "HighBP": yesNo(highBP),
+          "HighChol": yesNo(highChol),
+          "GenHlth": generalHealth,
+          "PhysActivity": yesNo(physActivity),
+          "Fruits": yesNo(fruits),
+          "Veggies": yesNo(veggies),
+          "DiffWalk": yesNo(diffWalk),
+        }),
+      );
 
-    
-    final Map<String, dynamic> data = jsonDecode(response.body);
-    print(' Risk save response: $data');
-    return data;
-  } catch (e) {
-    print(' Risk save failed: $e');
-    return {"success": false, "message": "Failed to save risk assessment."};
+      final data = jsonDecode(response.body);
+
+      print("Risk save response: $data");
+
+      return data;
+
+    } catch (e) {
+
+      print("Risk save error: $e");
+
+      return {
+        "success": false,
+        "message": "Failed to save risk assessment"
+      };
+    }
   }
-}
-
 
 }
