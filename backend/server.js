@@ -210,3 +210,12 @@ app.get('/prediction/:email', async (req, res) => {
     res.json({ success: false, message: 'Failed to fetch prediction' });
   }
 });
+
+const mealPlanSchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  riskLevel: { type: String, required: true },
+  plan: { type: Object, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const MealPlan = mongoose.model("MealPlan", mealPlanSchema);
