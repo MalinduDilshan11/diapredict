@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchPrediction() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.1.6:3000/prediction/${widget.email}'),
+        Uri.parse('http://10.192.170.66:3000/prediction/${widget.email}'),
       );
 
       final data = json.decode(response.body);
@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchNutritionSummary() async {
     try {
       final response = await http.get(
-        Uri.parse('http://192.168.1.6:3000/nutrition_summary/${widget.email}'),
+        Uri.parse('http://10.192.170.66:3000/nutrition_summary/${widget.email}'),
       );
 
       final data = json.decode(response.body);
