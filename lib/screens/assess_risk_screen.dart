@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_screen.dart';
 import 'dart:convert';
-import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class AssessRiskScreen extends StatefulWidget {
@@ -44,6 +43,9 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
 
   final List<String> healthOptions = ['Excellent', 'Very good', 'Good', 'Fair', 'Poor'];
 
+  // Base URL constant - use your computer's IP address
+  final String baseUrl = 'http://10.192.170.66';
+
   @override
   void initState() {
     super.initState();
@@ -84,21 +86,17 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
     if (currentStep > 0) setState(() => currentStep--);
   }
 
-  //  Helper to convert boolean to "Yes"/"No"
+  // Helper to convert boolean to "Yes"/"No"
   String boolToYesNo(bool? val) => val == true ? 'Yes' : 'No';
 
-  //  Send risk assessment to backend
+  // Send risk assessment to backend
   void _sendRiskToServer() async {
     try {
-      String baseUrl;
-      if (Platform.isAndroid) {
-        baseUrl = 'http://10.0.2.2:3000';
-      } else {
-        baseUrl = 'http://localhost:3000';
-      }
-
+      final url = '$baseUrl:3000/risk';
+      print('Sending risk data to: $url');
+      
       final response = await http.post(
-        Uri.parse('$baseUrl/risk'),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           "email": widget.email,
@@ -117,55 +115,56 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
         }),
       ).timeout(const Duration(seconds: 20));
 
-      final Map<String, dynamic> data = jsonDecode(response.body);
-      print(' Risk save response: $data');
+      print('Risk save response status: ${response.statusCode}');
+      print('Risk save response body: ${response.body}');
 
-      if (data['success'] == true) {
-        _getPredictionFromModel(); // ✅ Call model prediction after saving risk
-        _showCompletionDialog();
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        
+        if (data['success'] == true) {
+          await _getPredictionFromModel(); // Wait for prediction to complete
+          _showCompletionDialog();
+        } else {
+          _showErrorSnackBar(data['message'] ?? 'Failed to save risk assessment.');
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? 'Failed to save risk assessment.'))
-        );
+        _showErrorSnackBar('Server error: ${response.statusCode}');
       }
     } catch (e) {
       print(' Risk save failed: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to save risk assessment. Check your network.'))
-      );
+      _showErrorSnackBar('Failed to save risk assessment. Check your network.');
     }
   }
 
   int healthToInt(String? health) {
-  switch (health) {
-    case 'Excellent':
-      return 5;
-    case 'Very good':
-      return 4;
-    case 'Good':
-      return 3;
-    case 'Fair':
-      return 2;
-    case 'Poor':
-      return 1;
-    default:
-      return 3; 
+    switch (health) {
+      case 'Excellent':
+        return 5;
+      case 'Very good':
+        return 4;
+      case 'Good':
+        return 3;
+      case 'Fair':
+        return 2;
+      case 'Poor':
+        return 1;
+      default:
+        return 3; 
+    }
   }
-}
 
-  // New method to get prediction from Flask model
-  void _getPredictionFromModel() async {
+  // Get prediction from Flask model
+  Future<void> _getPredictionFromModel() async {
     try {
-      String baseUrl;
-      if (Platform.isAndroid) {
-        baseUrl = 'http://10.0.2.2:5000'; // Flask default port
-      } else {
-        baseUrl = 'http://localhost:5000';
-      }
-
+      final url = '$baseUrl:5000/predict';
+      print('Sending prediction request to: $url');
+      
       final response = await http.post(
-        Uri.parse('$baseUrl/predict'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse(url),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: jsonEncode({
           "Sex": gender ?? 'Male',
           "BMI": bmi,
@@ -179,41 +178,64 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
         }),
       ).timeout(const Duration(seconds: 20));
 
-      final Map<String, dynamic> data = jsonDecode(response.body);
-          String predictedRisk = data['risk_text'] ?? 'UNKNOWN';
+      print('Prediction response status: ${response.statusCode}');
+      print('Prediction response body: ${response.body}');
 
-        print(' Predicted Risk from Model: ${data['risk_text']}'); //Print in  console
-
-          _savePredictionToServer(predictedRisk);      
-      
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        String predictedRisk = data['risk_text'] ?? 'UNKNOWN';
+        print(' Predicted Risk from Model: $predictedRisk');
+        await _savePredictionToServer(predictedRisk);
+      } else {
+        print(' Prediction API failed with status: ${response.statusCode}');
+        print(' Response body: ${response.body}');
+        _showErrorSnackBar('Failed to get prediction. Please try again.');
+      }
     } catch (e) {
       print(' Prediction API failed: $e');
+      _showErrorSnackBar('Failed to connect to prediction service. Make sure Flask server is running on port 5000.');
     }
   }
 
-  void _savePredictionToServer(String predictedRisk) async {
-  try {
-    String baseUrl = Platform.isAndroid ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+  Future<void> _savePredictionToServer(String predictedRisk) async {
+    try {
+      final url = '$baseUrl:3000/prediction';
+      print('Saving prediction to: $url');
+      
+      final response = await http.post(
+        Uri.parse(url),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': widget.email,
+          'predictedRisk': predictedRisk,
+        }),
+      ).timeout(const Duration(seconds: 20));
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/prediction'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': widget.email,
-        'predictedRisk': predictedRisk,
-      }),
-    ).timeout(const Duration(seconds: 20));
+      print('Prediction save response status: ${response.statusCode}');
+      print('Prediction save response body: ${response.body}');
 
-    final Map<String, dynamic> data = jsonDecode(response.body);
-    if (data['success'] == true) {
-      print('✅ Prediction saved on server: $predictedRisk');
-    } else {
-      print('❌ Failed to save prediction: ${data['message']}');
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = jsonDecode(response.body);
+        if (data['success'] == true) {
+          print('✅ Prediction saved on server: $predictedRisk');
+        } else {
+          print('❌ Failed to save prediction: ${data['message']}');
+        }
+      }
+    } catch (e) {
+      print('❌ Prediction save failed: $e');
     }
-  } catch (e) {
-    print('❌ Prediction API failed: $e');
   }
-}
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
 
   void _showCompletionDialog() {
     showDialog(
@@ -237,14 +259,17 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
                   Navigator.pushAndRemoveUntil(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => HomeScreen(userName: widget.userName, email: widget.email,),
+                      builder: (context) => HomeScreen(
+                        userName: widget.userName, 
+                        email: widget.email,
+                      ),
                     ),
                     (route) => false,
                   );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  shape: StadiumBorder(),
+                  shape: const StadiumBorder(),
                 ),
                 child: const Text('Back to Home', style: TextStyle(color: Colors.white)),
               ),
