@@ -1,27 +1,22 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Add this import
 import numpy as np
 import joblib
 import os
 import gdown
 
-
-
 MODEL_PATH = "diabetes_risk_model.pkl"
 FILE_ID = "1Qhr_DAkgURhewnTe2-9Hlk3Xf9xyUrTD"
-
 
 if not os.path.exists(MODEL_PATH):
     print("Downloading model from Google Drive...")
     url = f"https://drive.google.com/uc?id={FILE_ID}"
     gdown.download(url, MODEL_PATH, quiet=False)
 
-
 model = joblib.load(MODEL_PATH)
 
-
-
-
 app = Flask(__name__)
+CORS(app)  # This enables CORS for all routes
 
 age_map = {
     "18-24": 1,
@@ -39,8 +34,12 @@ age_map = {
     "80+": 13
 }
 
-@app.route("/predict", methods=["POST"])
+@app.route("/predict", methods=["POST", "OPTIONS"])  # Add OPTIONS method for preflight
 def predict():
+    # Handle preflight OPTIONS request
+    if request.method == "OPTIONS":
+        return '', 200
+        
     try:
         data = request.json
 
@@ -86,6 +85,9 @@ def predict():
         print(f"Prediction error: {e}")
         return jsonify({"error": str(e)}), 500
 
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "healthy"}), 200
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)  # Listen on all interfaces
