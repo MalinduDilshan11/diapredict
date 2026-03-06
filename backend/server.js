@@ -338,3 +338,16 @@ app.post('/mealplan', async (req, res) => {
     });
   }
 });
+
+// Get nutrition summary for a user
+app.get('/nutrition_summary/:email', async (req, res) => {
+  const { email } = req.params;
+  try {
+    const summary = await NutritionSummary.findOne({ email }).sort({ createdAt: -1 });
+    if (!summary) return res.json({ success: false, message: 'No summary found' });
+    res.json({ success: true, summary: summary.summary });
+  } catch (err) {
+    console.error('Error fetching nutrition summary:', err);
+    res.json({ success: false, message: 'Failed to fetch nutrition summary' });
+  }
+});
