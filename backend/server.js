@@ -219,3 +219,39 @@ const mealPlanSchema = new mongoose.Schema({
 });
 
 const MealPlan = mongoose.model("MealPlan", mealPlanSchema);
+
+app.post('/mealplan', async (req, res) => {
+  const { email, riskLevel, plan } = req.body;
+
+  if (!email || !riskLevel || !plan) {
+    return res.json({
+      success: false,
+      message: "Email, riskLevel and plan are required"
+    });
+  }
+
+  try {
+    const newPlan = new MealPlan({
+      email,
+      riskLevel,
+      plan
+    });
+
+    await newPlan.save();
+
+    console.log("Meal plan saved for:", email);
+
+    res.json({
+      success: true,
+      message: "Meal plan saved successfully"
+    });
+
+  } catch (err) {
+    console.error("Error saving meal plan:", err);
+
+    res.json({
+      success: false,
+      message: "Failed to save meal plan"
+    });
+  }
+});
