@@ -7,7 +7,7 @@ class ApiService {
   
   static String baseUrl = kIsWeb
       ? "http://localhost:3000"
-      : "http://10.0.2.2:3000";
+      : "http://10.192.170.66:3000";
 
   // ---------------- SIGNUP ----------------
   static Future<Map<String, dynamic>> signup(
