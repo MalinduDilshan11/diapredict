@@ -220,6 +220,16 @@ const nutritionSummarySchema = new mongoose.Schema({
 
 const NutritionSummary = mongoose.model("NutritionSummary", nutritionSummarySchema);
 
+const nutritionSchema = new mongoose.Schema({
+  foodName: { type: String, required: true, unique: true },
+  glycemicIndex: Number,
+  calories: Number,
+  carbohydrates: Number,
+  protein: Number,
+  fat: Number
+});
+const Nutrition = mongoose.model('Nutrition', nutritionSchema);
+
 
 const mealPlanSchema = new mongoose.Schema({
   email: { type: String, required: true },
@@ -230,17 +240,20 @@ const mealPlanSchema = new mongoose.Schema({
 
 const MealPlan = mongoose.model("MealPlan", mealPlanSchema);
 
+// SAVE MEAL PLAN + NUTRITION SUMMARY
 app.post('/mealplan', async (req, res) => {
   const { email, riskLevel, plan } = req.body;
 
   if (!email || !riskLevel || !plan) {
     return res.json({
       success: false,
-      message: "Email, riskLevel and plan are required"
+      message: "email, riskLevel and plan are required"
     });
   }
 
   try {
+
+    //  SAVE MEAL PLAN 
     const newPlan = new MealPlan({
       email,
       riskLevel,
@@ -251,13 +264,73 @@ app.post('/mealplan', async (req, res) => {
 
     console.log("Meal plan saved for:", email);
 
+
+    // CALCULATE NUTRITION 
+    const summary = {};
+
+    for (const [day, meals] of Object.entries(plan)) {
+
+      const dayTotals = {
+        calories: 0,
+        protein: 0,
+        carbohydrates: 0,
+        fat: 0,
+        glycemicIndex: 0
+      };
+
+      let glycemicCount = 0;
+
+      for (const meal of Object.values(meals)) {
+
+        for (const foodList of Object.values(meal)) {
+
+          for (const foodName of foodList) {
+
+            const foodData = await Nutrition.findOne({ foodName });
+
+            if (!foodData) {
+              console.warn("Nutrition info missing for:", foodName);
+              continue;
+            }
+
+            dayTotals.calories += foodData.calories || 0;
+            dayTotals.protein += foodData.protein || 0;
+            dayTotals.carbohydrates += foodData.carbohydrates || 0;
+            dayTotals.fat += foodData.fat || 0;
+            dayTotals.glycemicIndex += foodData.glycemicIndex || 0;
+
+            glycemicCount++;
+          }
+        }
+      }
+
+      if (glycemicCount > 0) {
+        dayTotals.glycemicIndex =
+          +(dayTotals.glycemicIndex / glycemicCount).toFixed(2);
+      }
+
+      summary[day] = dayTotals;
+    }
+
+
+    //  SAVE SUMMARY 
+    const newSummary = new NutritionSummary({
+      email,
+      riskLevel,
+      summary
+    });
+
+    await newSummary.save();
+
+
     res.json({
       success: true,
-      message: "Meal plan saved successfully"
+      message: "Meal plan and nutrition summary saved successfully"
     });
 
   } catch (err) {
-    console.error("Error saving meal plan:", err);
+
+    console.error("Meal plan error:", err);
 
     res.json({
       success: false,
