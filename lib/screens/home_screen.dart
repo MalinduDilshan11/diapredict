@@ -1,20 +1,163 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'assess_risk_screen.dart';  // ← Import the new assessment screen
+import 'package:http/http.dart' as http;
+import 'assess_risk_screen.dart';
+import 'meal_plan_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   final String userName;
+  final String email;
 
-  const HomeScreen({super.key, required this.userName});
+  const HomeScreen({
+    super.key,
+    required this.userName,
+    required this.email,
+  });
 
-  // Temporary placeholder data (replace with real data from backend later)
-  final String riskLevel = "Low Risk";
-  final Color riskColor = Colors.green;
-  final String riskMessage = "Excellent! Keep up the healthy habits.";
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // Prediction Data
+  String riskLevel = "Loading...";
+  Color riskColor = Colors.grey;
+  String riskMessage = "Fetching your latest prediction...";
+
+  // Nutrition Summary Data
+  Map<String, dynamic> nutritionSummary = {}; // e.g., {day01: {...}, day02: {...}}
+  List<String> dayKeys = [];
+  int currentDayIndex = 0;
+
+  // Temporary placeholders
   final double bmi = 22.5;
   final int dailyCalories = 1800;
   final int calorieGoal = 2200;
 
+  @override
+  void initState() {
+    super.initState();
+    fetchPrediction();
+    fetchNutritionSummary();
+  }
+
+  // ---------------- Prediction ----------------
+  Future<void> fetchPrediction() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://192.168.8.196:3000/prediction/${widget.email}'),
+      );
+
+      final data = json.decode(response.body);
+
+      if (data['success'] == true) {
+        String risk = data['predictedRisk'];
+
+        setState(() {
+          riskLevel = risk;
+
+          if (risk == "LOW") {
+            riskColor = Colors.green;
+            riskMessage = "Excellent! Keep up the healthy habits.";
+          } else if (risk == "MEDIUM") {
+            riskColor = Colors.orange;
+            riskMessage = "Be careful. Improve lifestyle habits.";
+          } else if (risk == "HIGH") {
+            riskColor = Colors.red;
+            riskMessage = "High risk detected. Consult a doctor.";
+          } else {
+            riskColor = Colors.grey;
+            riskMessage = "Unknown risk level";
+          }
+        });
+      } else {
+        setState(() {
+          riskLevel = "No Data";
+          riskMessage = "No prediction available yet.";
+          riskColor = Colors.grey;
+        });
+      }
+    } catch (e) {
+      print("Error fetching prediction: $e");
+      setState(() {
+        riskLevel = "Error";
+        riskMessage = "Server connection failed";
+        riskColor = Colors.red;
+      });
+    }
+  }
+
+  // ---------------- Nutrition Summary ----------------
+  Future<void> fetchNutritionSummary() async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://192.168.8.196:3000/nutrition_summary/${widget.email}'),
+      );
+
+      final data = json.decode(response.body);
+
+      if (data['success'] == true && data['summary'] != null) {
+        setState(() {
+          nutritionSummary = data['summary'];
+          dayKeys = nutritionSummary.keys.toList()..sort(); // day01, day02, day03
+          currentDayIndex = 0;
+        });
+      } else {
+        print('No nutrition summary found');
+      }
+    } catch (e) {
+      print("Error fetching nutrition summary: $e");
+    }
+  }
+
+  // ---------------- Pie Chart Builder ----------------
+  Widget buildNutritionPieChart() {
+  if (nutritionSummary.isEmpty || dayKeys.isEmpty) {
+    return const Center(child: Text("No nutrition summary yet"));
+  }
+
+  final dayKey = dayKeys[currentDayIndex];
+  final dayData = nutritionSummary[dayKey];
+
+  final calories = dayData['calories']?.toDouble() ?? 0;
+  final protein = dayData['protein']?.toDouble() ?? 0;
+  final carbs = dayData['carbohydrates']?.toDouble() ?? 0;
+  final fat = dayData['fat']?.toDouble() ?? 0;
+  final glycemicIndex = dayData['glycemicIndex']?.toDouble() ?? 0;
+
+  return Column(
+    children: [
+      Text(
+        "Day ${currentDayIndex + 1} Nutrition",
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      const SizedBox(height: 10),
+      SizedBox(
+        height: 195,
+        child: PieChart(
+          PieChartData(
+            sectionsSpace: 2,
+            centerSpaceRadius: 40,
+            sections: [
+  PieChartSectionData(color: Colors.orange, value: protein, title: 'Protein', radius: 50),
+  PieChartSectionData(color: Colors.blue, value: carbs, title: 'Carbs', radius: 50),
+  PieChartSectionData(color: Colors.red, value: fat, title: 'Fat', radius: 50),
+  // PieChartSectionData(color: Colors.green, value: calories, title: 'Calories', radius: 50),
+  PieChartSectionData(color: Colors.purple, value: glycemicIndex, title: 'GI', radius: 50),
+],
+          ),
+        ),
+      ),
+       const SizedBox(height: 10),
+    Text("Calories: $calories kcal"),
+    const SizedBox(height: 5),
+   
+    ],
+  );
+}
+
+  // ---------------- UI ----------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -37,18 +180,13 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Personalized greeting with real name
             Text(
-              'Hello $userName!',
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Colors.blueGrey,
-              ),
+              'Hello ${widget.userName}!',
+              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blueGrey),
             ),
             const SizedBox(height: 20),
 
-            // Diabetes Risk Card
+            // Risk Card
             Card(
               elevation: 4,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -56,24 +194,17 @@ class HomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: Row(
                   children: [
-                    const Icon(Icons.trending_down, size: 40, color: Colors.green),
+                    Icon(Icons.trending_up, size: 40, color: riskColor),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text(
-                            'Your Diabetes Risk',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
+                          const Text('Your Diabetes Risk', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
                           Text(
                             riskLevel,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: riskColor,
-                            ),
+                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: riskColor),
                           ),
                           Text(riskMessage, style: const TextStyle(color: Colors.grey)),
                         ],
@@ -86,7 +217,7 @@ class HomeScreen extends StatelessWidget {
             ),
             const SizedBox(height: 20),
 
-            // BMI & Calorie Intake Row
+            // BMI + Calories
             Row(
               children: [
                 Expanded(
@@ -100,10 +231,7 @@ class HomeScreen extends StatelessWidget {
                           const Icon(Icons.scale, size: 40, color: Colors.blue),
                           const SizedBox(height: 10),
                           const Text('BMI', style: TextStyle(fontSize: 16)),
-                          Text(
-                            bmi.toStringAsFixed(1),
-                            style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                          ),
+                          Text(bmi.toStringAsFixed(1), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -121,10 +249,7 @@ class HomeScreen extends StatelessWidget {
                           const Icon(Icons.local_fire_department, size: 40, color: Colors.orange),
                           const SizedBox(height: 10),
                           const Text('Calorie Intake', style: TextStyle(fontSize: 16)),
-                          Text(
-                            '$dailyCalories kcal',
-                            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                          ),
+                          Text('$dailyCalories kcal', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -132,119 +257,66 @@ class HomeScreen extends StatelessWidget {
                 ),
               ],
             ),
+
             const SizedBox(height: 30),
 
-            // Action Buttons
+            // Buttons
             SizedBox(
               width: double.infinity,
               height: 60,
               child: ElevatedButton(
                 onPressed: () {
-                  // Navigate to Assess Risk Screen
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const AssessRiskScreen()),
+                    MaterialPageRoute(builder: (context) => AssessRiskScreen(userName: widget.userName, email: widget.email)),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                child: const Text(
-                  'Assess Risk Now',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                child: const Text('Assess Risk Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
               ),
             ),
-            const SizedBox(height: 16),
+
+            const SizedBox(height: 30),
+
+            // Nutrition PieChart (swipeable)
+            const Text('Daily Nutrition', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 10),
             SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: OutlinedButton(
-                onPressed: () {
-                  // Navigate to Meal Planner (later)
+              height: 300,
+              child: PageView.builder(
+                itemCount: dayKeys.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    currentDayIndex = index;
+                  });
                 },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.blue, width: 2),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                child: const Text(
-                  "Plan Today's Meals",
-                  style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              height: 60,
-              child: OutlinedButton(
-                onPressed: () {
-                  // Navigate to Progress (later)
+                itemBuilder: (context, index) {
+                  return buildNutritionPieChart();
                 },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.blue, width: 2),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                ),
-                child: const Text(
-                  'View Progress',
-                  style: TextStyle(fontSize: 18, color: Colors.blue, fontWeight: FontWeight.bold),
-                ),
               ),
             ),
             const SizedBox(height: 30),
-
-            // Daily Calorie Intake Ring Chart
-            const Text(
-              'Daily Calorie Intake',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            Text("Today's Progress: $dailyCalories kcal"),
-            const SizedBox(height: 20),
-            SizedBox(
-              height: 200,
-              child: PieChart(
-                PieChartData(
-                  sectionsSpace: 0,
-                  centerSpaceRadius: 40,
-                  sections: [
-                    PieChartSectionData(
-                      color: Colors.orange,
-                      value: dailyCalories.toDouble(),
-                      title: '',
-                      radius: 50,
-                    ),
-                    PieChartSectionData(
-                      color: Colors.grey[300],
-                      value: (calorieGoal - dailyCalories).toDouble(),
-                      title: '',
-                      radius: 50,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 80),
           ],
         ),
       ),
 
-      // Bottom Navigation Bar
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
-        currentIndex: 0, // Home is selected
+        currentIndex: 0,
         onTap: (index) {
           if (index == 1) {
-            // Assess tab tapped
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => const AssessRiskScreen()),
+              MaterialPageRoute(builder: (context) => AssessRiskScreen(userName: widget.userName, email: widget.email)),
+            );
+          } else if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MealPlanScreen(riskLevel: riskLevel, email: widget.email, userName: widget.userName)),
             );
           }
-          // Add other tabs later
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
