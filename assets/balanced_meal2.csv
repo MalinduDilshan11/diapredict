@@ -1,0 +1,185 @@
+Food_Name,Food_Type,Risk_Level,Meal_Type
+Soya Meat Curry,Protein,high,Breakfast
+Dhal Curry,Protein,high,Breakfast
+Chickpea Curry,Protein,high,Breakfast
+Green Peas Curry,Protein,high,Breakfast
+Green Gram,Protein,high,Breakfast
+Red Rice,Staple,high,Breakfast
+Leeks Curry,Vegetable,high,Lunch
+Green Peas Curry,Protein,high,Lunch
+Snake Gourd Curry,Vegetable,high,Lunch
+Broccoli Stir Fry,Vegetable,high,Lunch
+Cauliflower Curry,Vegetable,high,Lunch
+Leafy Greens,Vegetable,high,Lunch
+Kankun,Vegetable,high,Lunch
+Brinjal Curry,Vegetable,high,Lunch
+Pumpkin Curry,Vegetable,high,Lunch
+Bitter Gourd Curry,Vegetable,high,Lunch
+Green Gram,Protein,high,Lunch
+Turnip Curry,Vegetable,high,Lunch
+Cabbage Curry,Vegetable,high,Lunch
+Beans Curry,Vegetable,high,Lunch
+Ash Plantain Curry,Vegetable,high,Lunch
+Dhal Curry,Protein,high,Lunch
+Beetroot Curry,Vegetable,high,Lunch
+Winged Bean Curry,Vegetable,high,Lunch
+Radish Curry,Vegetable,high,Lunch
+Okra Curry,Vegetable,high,Lunch
+Green Banana Curry,Vegetable,high,Lunch
+Papaya,Fruit,high,Snack
+Guava,Fruit,high,Snack
+Pineapple,Fruit,high,Snack
+King Coconut Water,Beverage,high,Snack
+Herbal Tea,Beverage,high,Snack
+Plain Tea,Beverage,high,Snack
+Avocado,Fruit,high,Snack
+Pear,Fruit,high,Snack
+Apple,Fruit,high,Snack
+Fresh Lime Juice,Beverage,high,Snack
+Banana,Fruit,high,Snack
+Mango,Fruit,high,Snack
+Green Tea,Beverage,high,Snack
+Milk Tea,Beverage,high,Snack
+Orange,Fruit,high,Snack
+Watermelon,Fruit,high,Snack
+Green Gram,Protein,high,Dinner
+Dhal Curry,Protein,high,Dinner
+Mushroom Curry,Vegetable,high,Dinner
+Mixed Vegetable Curry,Vegetable,high,Dinner
+Green Peas Curry,Protein,high,Dinner
+Chickpea Curry,Protein,high,Dinner
+Pumpkin Curry,Vegetable,high,Dinner
+Stir Greens,Vegetable,high,Dinner
+Soya Meat Curry,Protein,high,Dinner
+Egg Curry,Protein,medium,Breakfast
+White Rice,Staple,medium,Breakfast
+Fish Curry,Protein,medium,Breakfast
+Chicken Curry,Protein,medium,Breakfast
+Egg White Omelette,Protein,medium,Breakfast
+Pittu,Staple,medium,Breakfast
+Chickpea Curry,Protein,medium,Breakfast
+Dhal Curry,Protein,medium,Breakfast
+Sprats Curry,Protein,medium,Breakfast
+Kurakkan Roti,Staple,medium,Breakfast
+Whole Wheat Bread,Staple,medium,Breakfast
+Kankun,Vegetable,medium,Lunch
+Carrot Curry,Vegetable,medium,Lunch
+Sprats Curry,Protein,medium,Lunch
+Bitter Gourd Curry,Vegetable,medium,Lunch
+Leafy Greens,Vegetable,medium,Lunch
+Beetroot Curry,Vegetable,medium,Lunch
+Egg Curry,Protein,medium,Lunch
+Snake Gourd Curry,Vegetable,medium,Lunch
+Leeks Curry,Vegetable,medium,Lunch
+Green Banana Curry,Vegetable,medium,Lunch
+Winged Bean Curry,Vegetable,medium,Lunch
+Beans Curry,Vegetable,medium,Lunch
+Chicken Curry,Protein,medium,Lunch
+Fish Curry,Protein,medium,Lunch
+Brinjal Curry,Vegetable,medium,Lunch
+Ash Plantain Curry,Vegetable,medium,Lunch
+Dhal Curry,Protein,medium,Lunch
+Cabbage Curry,Vegetable,medium,Lunch
+Oats,Staple,medium,Lunch
+Pumpkin Curry,Vegetable,medium,Lunch
+Papaya,Fruit,medium,Snack
+Guava,Fruit,medium,Snack
+Pineapple,Fruit,medium,Snack
+King Coconut Water,Beverage,medium,Snack
+Herbal Tea,Beverage,medium,Snack
+Plain Tea,Beverage,medium,Snack
+Avocado,Fruit,medium,Snack
+Pear,Fruit,medium,Snack
+Apple,Fruit,medium,Snack
+Fresh Lime Juice,Beverage,medium,Snack
+Banana,Fruit,medium,Snack
+Mango,Fruit,medium,Snack
+Green Tea,Beverage,medium,Snack
+Milk Tea,Beverage,medium,Snack
+Orange,Fruit,medium,Snack
+Watermelon,Fruit,medium,Snack
+Brinjal Curry,Vegetable,medium,Dinner
+Fish Curry,Protein,medium,Dinner
+Bitter Gourd Curry,Vegetable,medium,Dinner
+Snake Gourd Curry,Vegetable,medium,Dinner
+Dhal Curry,Protein,medium,Dinner
+Carrot Curry,Vegetable,medium,Dinner
+Chickpea Curry,Protein,medium,Dinner
+Ash Plantain Curry,Vegetable,medium,Dinner
+Cabbage Curry,Vegetable,medium,Dinner
+Chicken Curry,Protein,medium,Dinner
+Sprats Curry,Protein,medium,Dinner
+Pumpkin Curry,Vegetable,medium,Dinner
+Egg White Omelette,Protein,medium,Dinner
+Beans Curry,Vegetable,medium,Dinner
+Egg Curry,Protein,medium,Dinner
+Okra Curry,Vegetable,medium,Dinner
+Brown Rice,Staple,medium,Dinner
+Egg,Protein,low,Breakfast
+White Rice,Staple,low,Breakfast
+Pork Curry,Protein,low,Breakfast
+Chicken Curry,Protein,low,Breakfast
+Bread,Staple,low,Breakfast
+Pittu,Staple,low,Breakfast
+Soya Meat Curry,Protein,low,Breakfast
+Egg Curry,Protein,low,Breakfast
+Beef Curry,Protein,low,Breakfast
+Fish Curry,Protein,low,Breakfast
+Pancakes,Staple,low,Breakfast
+Paratha,Staple,low,Breakfast
+Kottu,Staple,low,Breakfast
+Noodles,Staple,low,Breakfast
+Winged Bean Curry,Vegetable,low,Lunch
+Carrot Curry,Vegetable,low,Lunch
+Pork Curry,Protein,low,Lunch
+Leafy Greens,Vegetable,low,Lunch
+Beetroot Curry,Vegetable,low,Lunch
+Chicken Curry,Protein,low,Lunch
+Radish Curry,Vegetable,low,Lunch
+Green Banana Curry,Vegetable,low,Lunch
+Cauliflower Curry,Vegetable,low,Lunch
+Soya Meat Curry,Protein,low,Lunch
+Okra Curry,Vegetable,low,Lunch
+Turnip Curry,Vegetable,low,Lunch
+Cabbage Curry,Vegetable,low,Lunch
+Egg Curry,Protein,low,Lunch
+Kankun,Vegetable,low,Lunch
+Paratha,Staple,low,Lunch
+Pumpkin Curry,Vegetable,low,Lunch
+Beans Curry,Vegetable,low,Lunch
+Beef Curry,Protein,low,Lunch
+Bitter Gourd Curry,Vegetable,low,Lunch
+Mixed Vegetable Curry,Staple,low,Lunch
+Papaya,Fruit,low,Snack
+Guava,Fruit,low,Snack
+Pineapple,Fruit,low,Snack
+King Coconut Water,Beverage,low,Snack
+Herbal Tea,Beverage,low,Snack
+Plain Tea,Beverage,low,Snack
+Avocado,Fruit,low,Snack
+Pear,Fruit,low,Snack
+Apple,Fruit,low,Snack
+Fresh Lime Juice,Beverage,low,Snack
+Banana,Fruit,low,Snack
+Mango,Fruit,low,Snack
+Green Tea,Beverage,low,Snack
+Milk Tea,Beverage,low,Snack
+Orange,Fruit,low,Snack
+Watermelon,Fruit,low,Snack
+Okra Curry,Vegetable,low,Dinner
+Brinjal Curry,Vegetable,low,Dinner
+Beans Curry,Vegetable,low,Dinner
+Beetroot Curry,Vegetable,low,Dinner
+Cabbage Curry,Vegetable,low,Dinner
+Fish Curry,Protein,low,Dinner
+Beef Curry,Protein,low,Dinner
+Pork Curry,Protein,low,Dinner
+Pumpkin Curry,Vegetable,low,Dinner
+Egg Curry,Protein,low,Dinner
+Chicken Curry,Protein,low,Dinner
+Paratha,Staple,low,Dinner
+Snake Gourd Curry,Vegetable,low,Dinner
+Carrot Curry,Vegetable,low,Dinner
+Egg,Protein,low,Dinner
+Bitter Gourd Curry,Vegetable,low,Dinner
+Ash Plantain Curry,Vegetable,low,Dinner
