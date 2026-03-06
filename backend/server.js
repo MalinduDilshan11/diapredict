@@ -211,6 +211,16 @@ app.get('/prediction/:email', async (req, res) => {
   }
 });
 
+const nutritionSummarySchema = new mongoose.Schema({
+  email: { type: String, required: true },
+  riskLevel: { type: String, required: true },
+  summary: { type: Object, required: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const NutritionSummary = mongoose.model("NutritionSummary", nutritionSummarySchema);
+
+
 const mealPlanSchema = new mongoose.Schema({
   email: { type: String, required: true },
   riskLevel: { type: String, required: true },
