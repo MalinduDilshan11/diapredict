@@ -1,9 +1,18 @@
 import 'package:flutter/material.dart';
-// Ensure this import matches your file structure
-// import 'package:your_project_name/home_screen.dart'; 
+import 'home_screen.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
 
 class AssessRiskScreen extends StatefulWidget {
-  const AssessRiskScreen({super.key});
+  final String userName;
+  final String email;
+
+  const AssessRiskScreen({
+    super.key,
+    required this.userName,
+    required this.email,
+  });
 
   @override
   State<AssessRiskScreen> createState() => _AssessRiskScreenState();
@@ -13,7 +22,7 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
   int currentStep = 0;
   final int totalSteps = 10;
 
-  // Answers storage (Original logic preserved)
+  // Answers storage
   String? ageGroup;
   String? gender;
   double height = 170.0;
@@ -41,7 +50,6 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
     _calculateBMI();
   }
 
-  // --- ORIGINAL FUNCTIONS ---
   void _calculateBMI() {
     if (height > 0 && weight > 0) {
       setState(() {
@@ -68,17 +76,146 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
     if (currentStep < totalSteps - 1) {
       setState(() => currentStep++);
     } else {
-      _calculateRisk();
+      _sendRiskToServer();
     }
   }
 
   void previousStep() {
-    if (currentStep > 0) {
-      setState(() => currentStep--);
+    if (currentStep > 0) setState(() => currentStep--);
+  }
+
+  //  Helper to convert boolean to "Yes"/"No"
+  String boolToYesNo(bool? val) => val == true ? 'Yes' : 'No';
+
+  //  Send risk assessment to backend
+  void _sendRiskToServer() async {
+    try {
+      String baseUrl;
+      if (Platform.isAndroid) {
+        baseUrl = 'http://10.0.2.2:3000';
+      } else {
+        baseUrl = 'http://localhost:3000';
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/risk'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "email": widget.email,
+          "Age": ageGroup ?? '',
+          "Sex": gender ?? '',
+          "Height": height,
+          "Weight": weight,
+          "BMI": bmi,
+          "HighBP": boolToYesNo(highBP),
+          "HighChol": boolToYesNo(highChol),
+          "GenHlth": generalHealth ?? 'Good',
+          "PhysActivity": boolToYesNo(physActivity),
+          "Fruits": boolToYesNo(fruits),
+          "Veggies": boolToYesNo(veggies),
+          "DiffWalk": boolToYesNo(diffWalk),
+        }),
+      ).timeout(const Duration(seconds: 20));
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      print(' Risk save response: $data');
+
+      if (data['success'] == true) {
+        _getPredictionFromModel(); // ✅ Call model prediction after saving risk
+        _showCompletionDialog();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? 'Failed to save risk assessment.'))
+        );
+      }
+    } catch (e) {
+      print(' Risk save failed: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to save risk assessment. Check your network.'))
+      );
     }
   }
 
-  void _calculateRisk() {
+  int healthToInt(String? health) {
+  switch (health) {
+    case 'Excellent':
+      return 5;
+    case 'Very good':
+      return 4;
+    case 'Good':
+      return 3;
+    case 'Fair':
+      return 2;
+    case 'Poor':
+      return 1;
+    default:
+      return 3; 
+  }
+}
+
+  // New method to get prediction from Flask model
+  void _getPredictionFromModel() async {
+    try {
+      String baseUrl;
+      if (Platform.isAndroid) {
+        baseUrl = 'http://10.0.2.2:5000'; // Flask default port
+      } else {
+        baseUrl = 'http://localhost:5000';
+      }
+
+      final response = await http.post(
+        Uri.parse('$baseUrl/predict'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          "Sex": gender ?? 'Male',
+          "BMI": bmi,
+          "HighBP": boolToYesNo(highBP),
+          "HighChol": boolToYesNo(highChol),
+          "GenHlth": healthToInt(generalHealth),
+          "PhysActivity": boolToYesNo(physActivity),
+          "Fruits": boolToYesNo(fruits),
+          "Veggies": boolToYesNo(veggies),
+          "DiffWalk": boolToYesNo(diffWalk),
+        }),
+      ).timeout(const Duration(seconds: 20));
+
+      final Map<String, dynamic> data = jsonDecode(response.body);
+          String predictedRisk = data['risk_text'] ?? 'UNKNOWN';
+
+        print(' Predicted Risk from Model: ${data['risk_text']}'); //Print in  console
+
+          _savePredictionToServer(predictedRisk);      
+      
+    } catch (e) {
+      print(' Prediction API failed: $e');
+    }
+  }
+
+  void _savePredictionToServer(String predictedRisk) async {
+  try {
+    String baseUrl = Platform.isAndroid ? 'http://10.0.2.2:3000' : 'http://localhost:3000';
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/prediction'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': widget.email,
+        'predictedRisk': predictedRisk,
+      }),
+    ).timeout(const Duration(seconds: 20));
+
+    final Map<String, dynamic> data = jsonDecode(response.body);
+    if (data['success'] == true) {
+      print('✅ Prediction saved on server: $predictedRisk');
+    } else {
+      print('❌ Failed to save prediction: ${data['message']}');
+    }
+  } catch (e) {
+    print('❌ Prediction API failed: $e');
+  }
+}
+
+  void _showCompletionDialog() {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -97,11 +234,18 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // Replaced Navigator.pop with a direct push to Home
-                  // Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => const HomeScreen()), (route) => false);
-                  Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen(userName: widget.userName, email: widget.email,),
+                    ),
+                    (route) => false,
+                  );
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, shape: StadiumBorder()),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  shape: StadiumBorder(),
+                ),
                 child: const Text('Back to Home', style: TextStyle(color: Colors.white)),
               ),
             ),
@@ -111,7 +255,6 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
     );
   }
 
-  // --- DESIGN HELPERS ---
   Map<String, dynamic> _getStepDesign() {
     switch (currentStep) {
       case 0: return {'icon': Icons.cake_rounded, 'color': Colors.indigo, 'label': 'Age'};
@@ -314,9 +457,9 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
       default:
         bool isHealth = currentStep == 5;
         dynamic currentVal = isHealth ? generalHealth : (currentStep == 3 ? highBP : currentStep == 4 ? highChol : currentStep == 6 ? physActivity : currentStep == 7 ? fruits : currentStep == 8 ? veggies : diffWalk);
-        
+
         return Column(
-          children: isHealth 
+          children: isHealth
             ? healthOptions.map((opt) => _buildOptionTile(title: opt, isSelected: generalHealth == opt, onTap: () => setState(() => generalHealth = opt))).toList()
             : [
                 _buildOptionTile(title: 'Yes', isSelected: currentVal == true, onTap: () => _updateAnswer(true)),
