@@ -4,7 +4,7 @@ Dhal Curry,Protein,high,Breakfast
 Chickpea Curry,Protein,high,Breakfast
 Green Peas Curry,Protein,high,Breakfast
 Green Gram,Protein,high,Breakfast
-Red Rice,Staple,high,Breakfast
+Red Rice,Staple,medium,Breakfast
 Leeks Curry,Vegetable,high,Lunch
 Green Peas Curry,Protein,high,Lunch
 Snake Gourd Curry,Vegetable,high,Lunch
@@ -52,7 +52,7 @@ Pumpkin Curry,Vegetable,high,Dinner
 Stir Greens,Vegetable,high,Dinner
 Soya Meat Curry,Protein,high,Dinner
 Egg Curry,Protein,medium,Breakfast
-White Rice,Staple,medium,Breakfast
+White Rice,Staple,low,Breakfast
 Fish Curry,Protein,medium,Breakfast
 Chicken Curry,Protein,medium,Breakfast
 Egg White Omelette,Protein,medium,Breakfast
@@ -60,7 +60,7 @@ Pittu,Staple,medium,Breakfast
 Chickpea Curry,Protein,medium,Breakfast
 Dhal Curry,Protein,medium,Breakfast
 Sprats Curry,Protein,medium,Breakfast
-Kurakkan Roti,Staple,medium,Breakfast
+Kurakkan Roti,Staple,high,Breakfast
 Whole Wheat Bread,Staple,medium,Breakfast
 Kankun,Vegetable,medium,Lunch
 Carrot Curry,Vegetable,medium,Lunch
@@ -80,7 +80,7 @@ Brinjal Curry,Vegetable,medium,Lunch
 Ash Plantain Curry,Vegetable,medium,Lunch
 Dhal Curry,Protein,medium,Lunch
 Cabbage Curry,Vegetable,medium,Lunch
-Oats,Staple,medium,Lunch
+Oats,Staple,high,Lunch
 Pumpkin Curry,Vegetable,medium,Lunch
 Papaya,Fruit,medium,Snack
 Guava,Fruit,medium,Snack
@@ -114,13 +114,13 @@ Egg White Omelette,Protein,medium,Dinner
 Beans Curry,Vegetable,medium,Dinner
 Egg Curry,Protein,medium,Dinner
 Okra Curry,Vegetable,medium,Dinner
-Brown Rice,Staple,medium,Dinner
+Brown Rice,Staple,high,Dinner
 Egg,Protein,low,Breakfast
 White Rice,Staple,low,Breakfast
 Pork Curry,Protein,low,Breakfast
 Chicken Curry,Protein,low,Breakfast
 Bread,Staple,low,Breakfast
-Pittu,Staple,low,Breakfast
+Pittu,Staple,medium,Breakfast
 Soya Meat Curry,Protein,low,Breakfast
 Egg Curry,Protein,low,Breakfast
 Beef Curry,Protein,low,Breakfast
@@ -181,3 +181,6 @@ Carrot Curry,Vegetable,low,Dinner
 Egg,Protein,low,Dinner
 Bitter Gourd Curry,Vegetable,low,Dinner
 Ash Plantain Curry,Vegetable,low,Dinner
+Brown Rice,Staple,medium,Dinner
+Red Rice,Staple,medium,Lunch
+Brown Rice,Staple,medium,Lunch
