@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'assess_risk_screen.dart';
 import 'meal_plan_screen.dart';
 import 'dashboard_screen.dart';
+import 'profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userName;
@@ -111,9 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
 
           nutritionSummary = data['summary'];
-
           dayKeys = nutritionSummary.keys.toList()..sort();
-
           currentDayIndex = 0;
 
         });
@@ -128,7 +127,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   }
 
-  // ---------------- Legend ----------------
+  // ---------------- Chart Legend ----------------
   Widget legendItem(String title, Color color) {
 
     return Row(
@@ -152,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ---------------- Chart ----------------
+  // ---------------- Nutrition Chart ----------------
   Widget buildNutritionPieChart() {
 
     if (nutritionSummary.isEmpty || dayKeys.isEmpty) {
@@ -196,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
 
           Expanded(
             child: PieChart(
@@ -255,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
 
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
 
           Wrap(
             spacing: 10,
@@ -285,7 +284,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ---------------- Action Card ----------------
+  // ---------------- Action Cards ----------------
   Widget actionCard({
     required IconData icon,
     required String title,
@@ -371,6 +370,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 16),
 
+            /// Risk Card
             Container(
 
               padding: const EdgeInsets.all(16),
@@ -547,7 +547,6 @@ class _HomeScreenState extends State<HomeScreen> {
       bottomNavigationBar: BottomNavigationBar(
 
         type: BottomNavigationBarType.fixed,
-
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         currentIndex: 0,
@@ -589,6 +588,21 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               MaterialPageRoute(
                 builder: (_) => DashboardScreen(
+                  email: widget.email,
+                  riskLevel: riskLevel,
+                ),
+              ),
+            );
+
+          }
+
+          else if (index == 4) {
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ProfileScreen(
+                  userName: widget.userName,
                   email: widget.email,
                   riskLevel: riskLevel,
                 ),
