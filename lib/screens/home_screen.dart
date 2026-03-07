@@ -4,6 +4,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:http/http.dart' as http;
 import 'assess_risk_screen.dart';
 import 'meal_plan_screen.dart';
+import 'dashboard_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final String userName;
@@ -26,7 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String riskMessage = "Fetching your latest prediction...";
 
   // Nutrition Summary Data
-  Map<String, dynamic> nutritionSummary = {}; // e.g., {day01: {...}, day02: {...}}
+  Map<String, dynamic> nutritionSummary =
+      {}; // e.g., {day01: {...}, day02: {...}}
   List<String> dayKeys = [];
   int currentDayIndex = 0;
 
@@ -92,7 +94,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchNutritionSummary() async {
     try {
       final response = await http.get(
-        Uri.parse('http://10.192.170.66:3000/nutrition_summary/${widget.email}'),
+        Uri.parse(
+            'http://10.192.170.66:3000/nutrition_summary/${widget.email}'),
       );
 
       final data = json.decode(response.body);
@@ -100,7 +103,8 @@ class _HomeScreenState extends State<HomeScreen> {
       if (data['success'] == true && data['summary'] != null) {
         setState(() {
           nutritionSummary = data['summary'];
-          dayKeys = nutritionSummary.keys.toList()..sort(); // day01, day02, day03
+          dayKeys = nutritionSummary.keys.toList()
+            ..sort(); // day01, day02, day03
           currentDayIndex = 0;
         });
       } else {
@@ -113,49 +117,61 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ---------------- Pie Chart Builder ----------------
   Widget buildNutritionPieChart() {
-  if (nutritionSummary.isEmpty || dayKeys.isEmpty) {
-    return const Center(child: Text("No nutrition summary yet"));
-  }
+    if (nutritionSummary.isEmpty || dayKeys.isEmpty) {
+      return const Center(child: Text("No nutrition summary yet"));
+    }
 
-  final dayKey = dayKeys[currentDayIndex];
-  final dayData = nutritionSummary[dayKey];
+    final dayKey = dayKeys[currentDayIndex];
+    final dayData = nutritionSummary[dayKey];
 
-  final calories = dayData['calories']?.toDouble() ?? 0;
-  final protein = dayData['protein']?.toDouble() ?? 0;
-  final carbs = dayData['carbohydrates']?.toDouble() ?? 0;
-  final fat = dayData['fat']?.toDouble() ?? 0;
-  final glycemicIndex = dayData['glycemicIndex']?.toDouble() ?? 0;
+    final calories = dayData['calories']?.toDouble() ?? 0;
+    final protein = dayData['protein']?.toDouble() ?? 0;
+    final carbs = dayData['carbohydrates']?.toDouble() ?? 0;
+    final fat = dayData['fat']?.toDouble() ?? 0;
+    final glycemicIndex = dayData['glycemicIndex']?.toDouble() ?? 0;
 
-  return Column(
-    children: [
-      Text(
-        "Day ${currentDayIndex + 1} Nutrition",
-        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      ),
-      const SizedBox(height: 10),
-      SizedBox(
-        height: 195,
-        child: PieChart(
-          PieChartData(
-            sectionsSpace: 2,
-            centerSpaceRadius: 40,
-            sections: [
-  PieChartSectionData(color: Colors.orange, value: protein, title: 'Protein', radius: 50),
-  PieChartSectionData(color: Colors.blue, value: carbs, title: 'Carbs', radius: 50),
-  PieChartSectionData(color: Colors.red, value: fat, title: 'Fat', radius: 50),
-  // PieChartSectionData(color: Colors.green, value: calories, title: 'Calories', radius: 50),
-  PieChartSectionData(color: Colors.purple, value: glycemicIndex, title: 'GI', radius: 50),
-],
+    return Column(
+      children: [
+        Text(
+          "Day ${currentDayIndex + 1} Nutrition",
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          height: 195,
+          child: PieChart(
+            PieChartData(
+              sectionsSpace: 2,
+              centerSpaceRadius: 40,
+              sections: [
+                PieChartSectionData(
+                    color: Colors.orange,
+                    value: protein,
+                    title: 'Protein',
+                    radius: 50),
+                PieChartSectionData(
+                    color: Colors.blue,
+                    value: carbs,
+                    title: 'Carbs',
+                    radius: 50),
+                PieChartSectionData(
+                    color: Colors.red, value: fat, title: 'Fat', radius: 50),
+                // PieChartSectionData(color: Colors.green, value: calories, title: 'Calories', radius: 50),
+                PieChartSectionData(
+                    color: Colors.purple,
+                    value: glycemicIndex,
+                    title: 'GI',
+                    radius: 50),
+              ],
+            ),
           ),
         ),
-      ),
-       const SizedBox(height: 10),
-    Text("Calories: $calories kcal"),
-    const SizedBox(height: 5),
-   
-    ],
-  );
-}
+        const SizedBox(height: 10),
+        Text("Calories: $calories kcal"),
+        const SizedBox(height: 5),
+      ],
+    );
+  }
 
   // ---------------- UI ----------------
   @override
@@ -182,14 +198,18 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               'Hello ${widget.userName}!',
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Colors.blueGrey),
+              style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blueGrey),
             ),
             const SizedBox(height: 20),
 
             // Risk Card
             Card(
               elevation: 4,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Row(
@@ -200,13 +220,19 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('Your Diabetes Risk', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                          const Text('Your Diabetes Risk',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
                           const SizedBox(height: 8),
                           Text(
                             riskLevel,
-                            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: riskColor),
+                            style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: riskColor),
                           ),
-                          Text(riskMessage, style: const TextStyle(color: Colors.grey)),
+                          Text(riskMessage,
+                              style: const TextStyle(color: Colors.grey)),
                         ],
                       ),
                     ),
@@ -223,7 +249,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Card(
                     elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
@@ -231,7 +258,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Icon(Icons.scale, size: 40, color: Colors.blue),
                           const SizedBox(height: 10),
                           const Text('BMI', style: TextStyle(fontSize: 16)),
-                          Text(bmi.toStringAsFixed(1), style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold)),
+                          Text(bmi.toStringAsFixed(1),
+                              style: const TextStyle(
+                                  fontSize: 32, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -241,15 +270,20 @@ class _HomeScreenState extends State<HomeScreen> {
                 Expanded(
                   child: Card(
                     elevation: 4,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: Column(
                         children: [
-                          const Icon(Icons.local_fire_department, size: 40, color: Colors.orange),
+                          const Icon(Icons.local_fire_department,
+                              size: 40, color: Colors.orange),
                           const SizedBox(height: 10),
-                          const Text('Calorie Intake', style: TextStyle(fontSize: 16)),
-                          Text('$dailyCalories kcal', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                          const Text('Calorie Intake',
+                              style: TextStyle(fontSize: 16)),
+                          Text('$dailyCalories kcal',
+                              style: const TextStyle(
+                                  fontSize: 28, fontWeight: FontWeight.bold)),
                         ],
                       ),
                     ),
@@ -268,18 +302,28 @@ class _HomeScreenState extends State<HomeScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AssessRiskScreen(userName: widget.userName, email: widget.email)),
+                    MaterialPageRoute(
+                        builder: (context) => AssessRiskScreen(
+                            userName: widget.userName, email: widget.email)),
                   );
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
-                child: const Text('Assess Risk Now', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16))),
+                child: const Text('Assess Risk Now',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white)),
               ),
             ),
 
             const SizedBox(height: 30),
 
             // Nutrition PieChart (swipeable)
-            const Text('Daily Nutrition', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text('Daily Nutrition',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 10),
             SizedBox(
               height: 300,
@@ -299,7 +343,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.blue,
@@ -309,20 +352,39 @@ class _HomeScreenState extends State<HomeScreen> {
           if (index == 1) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AssessRiskScreen(userName: widget.userName, email: widget.email)),
+              MaterialPageRoute(
+                  builder: (context) => AssessRiskScreen(
+                      userName: widget.userName, email: widget.email)),
             );
           } else if (index == 2) {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => MealPlanScreen(riskLevel: riskLevel, email: widget.email, userName: widget.userName)),
+              MaterialPageRoute(
+                  builder: (context) => MealPlanScreen(
+                      riskLevel: riskLevel,
+                      email: widget.email,
+                      userName: widget.userName)),
+            );
+          } else if (index == 3) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DashboardScreen(
+                  email: widget.email,
+                  riskLevel: riskLevel,
+                ),
+              ),
             );
           }
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.assessment), label: 'Assess'),
-          BottomNavigationBarItem(icon: Icon(Icons.restaurant_menu), label: 'Meals'),
-          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Dashboard'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.assessment), label: 'Assess'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.restaurant_menu), label: 'Meals'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.bar_chart), label: 'Dashboard'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
