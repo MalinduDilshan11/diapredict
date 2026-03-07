@@ -351,3 +351,33 @@ app.get('/nutrition_summary/:email', async (req, res) => {
     res.json({ success: false, message: 'Failed to fetch nutrition summary' });
   }
 });
+
+app.get('/mealplan/:email', async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const mealPlan = await MealPlan.findOne({ email }).sort({ createdAt: -1 });
+
+    if (!mealPlan) {
+      return res.json({
+        success: false,
+        message: "No meal plan found"
+      });
+    }
+
+    res.json({
+      success: true,
+      plan: mealPlan.plan
+    });
+
+  } catch (err) {
+
+    console.error("Error fetching meal plan:", err);
+
+    res.json({
+      success: false,
+      message: "Failed to fetch meal plan"
+    });
+
+  }
+});
