@@ -7,19 +7,16 @@ import '../models/meal_model.dart';
 import '../services/meal_service.dart';
 import 'home_screen.dart';
 
-
 class MealPlanScreen extends StatefulWidget {
   final String riskLevel;
   final String email;
   final String userName;
-   
 
   const MealPlanScreen({
     super.key,
     required this.riskLevel,
     required this.email,
-    required this.userName, 
-
+    required this.userName,
   });
 
   @override
@@ -128,108 +125,159 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     return true;
   }
 
-  // ----------------------------------------------------
-  
- Future<void> saveMealPlan() async {
+  Future<void> saveMealPlan() async {
+    final url = Uri.parse("http://10.192.170.66:3000/mealplan");
 
-  final url = Uri.parse("http://10.192.170.66:3000/mealplan");
+    final Map<String, dynamic> formatted = {};
 
-  final Map<String, dynamic> formatted = {};
+    selectedFoods.forEach((key, values) {
+      final parts = key.split('-');
+      final day = parts[0].trim();
+      final meal = parts[1].trim();
 
-  selectedFoods.forEach((key, values) {
-    // key = "Day 1-Breakfast"
+      final dayKey =
+          "day${day.replaceAll('Day', '').trim().padLeft(2, '0')}";
 
-    final parts = key.split('-');
-    final day = parts[0].trim();      // Day 1
-    final meal = parts[1].trim();     // Breakfast
+      formatted.putIfAbsent(dayKey, () => {});
+      formatted[dayKey].putIfAbsent(meal.toLowerCase(), () => {});
 
-    final dayKey =
-        "day${day.replaceAll('Day', '').trim().padLeft(2, '0')}";
+      for (final item in values) {
+        final split = item.split('|');
 
-    formatted.putIfAbsent(dayKey, () => {});
-    formatted[dayKey].putIfAbsent(meal.toLowerCase(), () => {});
+        final category = split[0].toLowerCase();
+        final food = split[1];
 
-    for (final item in values) {
-      // item = Protein|Egg
-      final split = item.split('|');
+        formatted[dayKey][meal.toLowerCase()]
+            .putIfAbsent(category, () => []);
 
-      final category = split[0].toLowerCase(); // protein
-      final food = split[1];
+        formatted[dayKey][meal.toLowerCase()][category].add(food);
+      }
+    });
 
-      formatted[dayKey][meal.toLowerCase()]
-          .putIfAbsent(category, () => []);
+    final body = {
+      "email": widget.email,
+      "riskLevel": widget.riskLevel,
+      "plan": formatted,
+    };
 
-      formatted[dayKey][meal.toLowerCase()][category].add(food);
+    final response = await http.post(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(body),
+    );
+
+    final data = jsonDecode(response.body);
+
+    if (data["success"] != true) {
+      throw Exception("Save failed");
     }
-  });
-
-  final body = {
-    "email": widget.email,
-    "riskLevel": widget.riskLevel,
-    "plan": formatted,
-  };
-
-  final response = await http.post(
-    url,
-    headers: {"Content-Type": "application/json"},
-    body: jsonEncode(body),
-  );
-
-  final data = jsonDecode(response.body);
-
-  if (data["success"] != true) {
-    throw Exception("Save failed");
   }
-}
 
   Widget buildMealCard(String meal) {
     final key = "Day $currentDay-$meal";
     final categories = ["Protein", "Staple", "Vegetable", "Fruit"];
 
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Day $currentDay • $meal",
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const Divider(),
-            for (var category in categories) ...[
-              if (!(meal == "Breakfast" &&
-                  category.toLowerCase() == "vegetable")) ...[
-                Text(
-                  "$category (select ${userLimits[meal]![category]})",
-                  style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 5),
-                ...randomMeals[meal]!
+    IconData mealIcon;
+
+    if (meal == "Breakfast") {
+      mealIcon = Icons.wb_sunny;
+    } else if (meal == "Lunch") {
+      mealIcon = Icons.lunch_dining;
+    } else {
+      mealIcon = Icons.nightlight_round;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 18),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 6),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(mealIcon, color: Colors.blue),
+              const SizedBox(width: 10),
+              Text(
+                "Day $currentDay • $meal",
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          const SizedBox(height: 15),
+
+          for (var category in categories) ...[
+            if (!(meal == "Breakfast" &&
+                category.toLowerCase() == "vegetable")) ...[
+              Text(
+                "$category (select ${userLimits[meal]![category]})",
+                style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600),
+              ),
+
+              const SizedBox(height: 10),
+
+              Wrap(
+                spacing: 10,
+                runSpacing: 10,
+                children: randomMeals[meal]!
                     .where((m) =>
                         m.foodType.toLowerCase() ==
                         category.toLowerCase())
                     .map((mealItem) {
+
                   final selected = selectedFoods[key]
                           ?.contains(
                               "$category|${mealItem.foodName}") ??
                       false;
 
-                  return CheckboxListTile(
-                    title: Text(mealItem.foodName),
-                    value: selected,
-                    onChanged: (_) => toggleFood(
-                        key, mealItem.foodName, meal, category),
+                  return GestureDetector(
+                    onTap: () => toggleFood(
+                        key,
+                        mealItem.foodName,
+                        meal,
+                        category),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? Colors.blue
+                            : Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: Text(
+                        mealItem.foodName,
+                        style: TextStyle(
+                          color: selected
+                              ? Colors.white
+                              : Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   );
                 }).toList(),
-                const SizedBox(height: 10),
-              ],
-            ],
+              ),
+
+              const SizedBox(height: 18),
+            ]
           ],
-        ),
+        ],
       ),
     );
   }
@@ -243,35 +291,69 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
     }
 
     return Scaffold(
+      backgroundColor: const Color(0xfff6f8fb),
+
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
         title: const Text(
-          'DiaPredict',
+          "DiaPredict",
           style: TextStyle(
-            color: Colors.blue,
-            fontWeight: FontWeight.bold,
-            fontSize: 24,
-          ),
+              fontWeight: FontWeight.bold,
+              fontSize: 24),
         ),
         centerTitle: true,
+        elevation: 0,
       ),
+
       body: Padding(
         padding: const EdgeInsets.all(16),
+
         child: Column(
           children: [
-            Text(
-              "Risk Level: ${widget.riskLevel}",
-              style:
-                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xff4facfe), Color(0xff00f2fe)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                children: [
+
+                  const Icon(Icons.health_and_safety,
+                      color: Colors.white, size: 32),
+
+                  const SizedBox(width: 12),
+
+                  Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+
+                      Text(
+                        "Risk Level: ${widget.riskLevel}",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+
+                      Text(
+                        "Current Day: $currentDay / 3",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  )
+                ],
+              ),
             ),
-            const SizedBox(height: 10),
-            Text(
-              "Current Day: $currentDay",
-              style:
-                  const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-            ),
+
             const SizedBox(height: 20),
+
             Expanded(
               child: ListView(
                 children: [
@@ -281,6 +363,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                 ],
               ),
             ),
+
             if (isDayCompleted(currentDay) && currentDay < 3)
               SizedBox(
                 width: double.infinity,
@@ -291,51 +374,67 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                       currentDay++;
                     });
                   },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(18),
+                    ),
+                  ),
                   child: const Text("Next Day"),
                 ),
               ),
+
             if (currentDay == 3 && isDayCompleted(currentDay))
               SizedBox(
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                 onPressed: () async {
-                      try {
-                        await saveMealPlan();
+                  onPressed: () async {
+                    try {
+                      await saveMealPlan();
 
-                        if (!mounted) return;
+                      if (!mounted) return;
 
-                        // ✅ show success message
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Meal plan saved successfully!"),
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              "Meal plan saved successfully!"),
+                        ),
+                      );
+
+                      await Future.delayed(
+                          const Duration(milliseconds: 800));
+
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => HomeScreen(
+                            userName: widget.userName,
+                            email: widget.email,
                           ),
-                        );
+                        ),
+                      );
+                    } catch (e) {
+                      if (!mounted) return;
 
-                        // ✅ wait a short moment so user can see the message
-                        await Future.delayed(const Duration(milliseconds: 800));
-
-                        // ✅ go to home screen
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => HomeScreen(
-                               userName: widget.userName,
-                                email: widget.email,
-                            ),
-                          ),
-                        );
-
-                      } catch (e) {
-                        if (!mounted) return;
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Failed to save meal plan"),
-                          ),
-                        );
-                      }
-                    },
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(
+                        const SnackBar(
+                          content:
+                              Text("Failed to save meal plan"),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    shape: RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.circular(18),
+                    ),
+                  ),
                   child: const Text("Finish"),
                 ),
               ),
