@@ -1,7 +1,7 @@
 import sys
 import os
 import warnings
-warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore", category=UserWarning)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pytest
 from app import app, age_map  # Assuming app.py is in the same dir
