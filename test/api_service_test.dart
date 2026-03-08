@@ -5,9 +5,11 @@ void main() {
 
   test('Signup API returns success', () async {
 
+    final email = "test${DateTime.now().millisecondsSinceEpoch}@mail.com";
+
     final result = await ApiService.signup(
       'Test User',
-      'test@test.com',
+      email,
       '123456'
     );
 
