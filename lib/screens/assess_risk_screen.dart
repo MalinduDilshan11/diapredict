@@ -167,6 +167,7 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
         },
         body: jsonEncode({
           "Sex": gender ?? 'Male',
+          "Age": ageGroup,
           "BMI": bmi,
           "HighBP": boolToYesNo(highBP),
           "HighChol": boolToYesNo(highChol),
