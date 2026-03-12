@@ -45,7 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
 
       final response = await http.get(
-        Uri.parse('http://10.192.170.66:3000/prediction/${widget.email}')
+        Uri.parse('http://10.63.63.66:3000/prediction/${widget.email}')
       );
 
       final data = json.decode(response.body);
@@ -101,7 +101,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       final response = await http.get(
         Uri.parse(
-          'http://10.192.170.66:3000/nutrition_summary/${widget.email}'
+          'http://10.63.63.66:3000/nutrition_summary/${widget.email}'
         ),
       );
 

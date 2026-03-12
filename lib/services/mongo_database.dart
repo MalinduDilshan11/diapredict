@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 class MongoDatabase {
 
   // IMPORTANT: Use  PC IP address
-  static const String baseUrl = "http://10.192.170.66:3000";
+  static const String baseUrl = "http://10.63.63.66:3000";
 
   /// ---------------- SIGNUP ----------------
   static Future<Map<String, dynamic>> insertUser(

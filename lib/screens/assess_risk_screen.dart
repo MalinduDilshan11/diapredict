@@ -44,7 +44,7 @@ class _AssessRiskScreenState extends State<AssessRiskScreen> {
   final List<String> healthOptions = ['Excellent', 'Very good', 'Good', 'Fair', 'Poor'];
 
   // Base URL constant - use your computer's IP address
-  final String baseUrl = 'http://10.192.170.66';
+  final String baseUrl = 'http://10.63.63.66';
 
   @override
   void initState() {

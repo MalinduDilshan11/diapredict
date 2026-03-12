@@ -126,7 +126,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
   }
 
   Future<void> saveMealPlan() async {
-    final url = Uri.parse("http://10.192.170.66:3000/mealplan");
+    final url = Uri.parse("http://10.63.63.66:3000/mealplan");
 
     final Map<String, dynamic> formatted = {};
 

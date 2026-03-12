@@ -35,7 +35,7 @@ class _MealPlanViewScreenState extends State<MealPlanViewScreen> {
     try {
 
       final response = await http.get(
-        Uri.parse("http://10.192.170.66:3000/mealplan/${widget.email}")
+        Uri.parse("http://10.63.63.66:3000/mealplan/${widget.email}")
       );
 
       final data = jsonDecode(response.body);

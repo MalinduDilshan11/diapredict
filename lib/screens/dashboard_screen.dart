@@ -43,7 +43,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
     try {
 
       final response = await http.get(
-        Uri.parse("http://10.192.170.66:3000/nutrition_summary/${widget.email}")
+        Uri.parse("http://10.63.63.66:3000/nutrition_summary/${widget.email}")
       );
 
       final data = jsonDecode(response.body);
