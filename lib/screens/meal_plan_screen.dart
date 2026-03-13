@@ -31,7 +31,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
   final Map<String, Set<String>> selectedFoods = {};
 
-  final Map<String, Map<String, int>> userLimits = {
+  Map<String, Map<String, int>> userLimits = {
     "Breakfast": {"Protein": 2, "Staple": 1, "Vegetable": 1, "Fruit": 1},
     "Lunch": {"Protein": 2, "Staple": 1, "Vegetable": 2, "Fruit": 1},
     "Dinner": {"Protein": 2, "Staple": 1, "Vegetable": 2, "Fruit": 2},
@@ -48,11 +48,24 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
   @override
   void initState() {
     super.initState();
+    adjustLimitsByRisk();
     loadMeals();
+  }
+
+  // Reduce limits when risk is HIGH
+  void adjustLimitsByRisk() {
+    if (widget.riskLevel.toLowerCase() == "high") {
+      userLimits.forEach((meal, categories) {
+        categories.forEach((category, value) {
+          userLimits[meal]![category] = max(1, value - 1);
+        });
+      });
+    }
   }
 
   Future<void> loadMeals() async {
     setState(() => loading = true);
+
     final meals = await MealService.loadMeals();
 
     filteredMeals = meals.where((m) {
@@ -66,12 +79,15 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
   void generateRandomMeals() {
     randomMeals.clear();
+
     final mealTypes = ["Breakfast", "Lunch", "Dinner"];
     final categories = ["Protein", "Staple", "Vegetable", "Fruit"];
+
     final random = Random();
 
     for (var meal in mealTypes) {
       randomMeals[meal] = [];
+
       for (var cat in categories) {
         if (meal == "Breakfast" && cat.toLowerCase() == "vegetable") continue;
 
@@ -84,7 +100,9 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
             .toList();
 
         items.shuffle(random);
+
         final count = maxItems[meal]![cat] ?? 0;
+
         randomMeals[meal]!.addAll(items.take(count));
       }
     }
@@ -114,6 +132,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
             category.toLowerCase() == "vegetable") continue;
 
         final key = "Day $day-$meal";
+
         final count = selectedFoods[key]
                 ?.where((f) => f.startsWith("$category|"))
                 .length ??
@@ -122,6 +141,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
         if (count < userLimits[meal]![category]!) return false;
       }
     }
+
     return true;
   }
 
@@ -132,6 +152,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
     selectedFoods.forEach((key, values) {
       final parts = key.split('-');
+
       final day = parts[0].trim();
       final meal = parts[1].trim();
 
@@ -216,6 +237,7 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
               ),
             ],
           ),
+
           const SizedBox(height: 15),
 
           for (var category in categories) ...[
@@ -306,7 +328,6 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
 
       body: Padding(
         padding: const EdgeInsets.all(16),
-
         child: Column(
           children: [
 
@@ -374,13 +395,6 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                       currentDay++;
                     });
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(18),
-                    ),
-                  ),
                   child: const Text("Next Day"),
                 ),
               ),
@@ -428,13 +442,6 @@ class _MealPlanScreenState extends State<MealPlanScreen> {
                       );
                     }
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(18),
-                    ),
-                  ),
                   child: const Text("Finish"),
                 ),
               ),
